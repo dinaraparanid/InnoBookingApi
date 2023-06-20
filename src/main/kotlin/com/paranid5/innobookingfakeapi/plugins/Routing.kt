@@ -1,8 +1,8 @@
-package com.innoswp.plugins
+package com.paranid5.innobookingfakeapi.plugins
 
-import com.innoswp.data.BookRequest
-import com.innoswp.data.BookResponse
-import com.innoswp.data.Room
+import com.paranid5.innobookingfakeapi.data.BookRequest
+import com.paranid5.innobookingfakeapi.data.BookResponse
+import com.paranid5.innobookingfakeapi.data.Room
 import io.ktor.http.*
 import io.ktor.server.routing.*
 import io.ktor.server.response.*

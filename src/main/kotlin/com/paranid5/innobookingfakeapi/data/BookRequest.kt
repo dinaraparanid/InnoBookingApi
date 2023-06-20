@@ -1,15 +1,13 @@
-package com.innoswp.data
+package com.paranid5.innobookingfakeapi.data
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class BookResponse(
-    val id: String,
+data class BookRequest(
     val title: String,
     val start: Instant,
     val end: Instant,
-    val room: Room,
     @SerialName("owner_email") val ownerEmail: String
 )

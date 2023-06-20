@@ -1,6 +1,6 @@
-package com.innoswp.data.extensions
+package com.paranid5.innobookingfakeapi.data.extensions
 
-import com.innoswp.data.BookResponse
+import com.paranid5.innobookingfakeapi.data.BookResponse
 
 inline val BookResponse.bookingMessage
     get() = """

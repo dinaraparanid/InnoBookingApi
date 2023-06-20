@@ -1,4 +1,4 @@
-package com.innoswp
+package com.paranid5.innobookingfakeapi
 
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -6,6 +6,7 @@ import io.ktor.server.testing.*
 import kotlin.test.*
 import io.ktor.http.*
 import com.innoswp.plugins.*
+import com.paranid5.innobookingfakeapi.plugins.configureRouting
 
 class ApplicationTest {
     @Test

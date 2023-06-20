@@ -1,4 +1,4 @@
-package com.innoswp.data
+package com.paranid5.innobookingfakeapi.data
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable

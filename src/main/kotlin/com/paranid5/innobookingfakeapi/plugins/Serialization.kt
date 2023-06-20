@@ -1,4 +1,4 @@
-package com.innoswp.plugins
+package com.paranid5.innobookingfakeapi.plugins
 
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.plugins.contentnegotiation.*

@@ -1,4 +1,4 @@
-package com.innoswp.data.extensions
+package com.paranid5.innobookingfakeapi.data.extensions
 
 import kotlinx.datetime.Instant
 
