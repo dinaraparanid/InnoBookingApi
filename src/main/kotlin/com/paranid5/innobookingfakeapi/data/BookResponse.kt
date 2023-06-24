@@ -10,6 +10,6 @@ data class BookResponse(
     val title: String,
     val start: Instant,
     val end: Instant,
-    val room: Room,
+    val room: RoomData,
     @SerialName("owner_email") val ownerEmail: String
 )

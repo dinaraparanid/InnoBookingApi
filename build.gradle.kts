@@ -30,9 +30,12 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
 
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+    implementation("org.jetbrains.exposed", "exposed-core", "0.40.1")
+    implementation("org.jetbrains.exposed", "exposed-dao", "0.40.1")
+    implementation("org.jetbrains.exposed", "exposed-jdbc", "0.40.1")
+    implementation("org.jetbrains.exposed", "exposed-java-time", "0.40.1")
 
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
-    testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    implementation("org.xerial:sqlite-jdbc:3.42.0.0")
 }

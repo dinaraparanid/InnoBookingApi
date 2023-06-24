@@ -2,7 +2,7 @@ package com.paranid5.innobookingfakeapi.plugins
 
 import com.paranid5.innobookingfakeapi.data.BookRequest
 import com.paranid5.innobookingfakeapi.data.BookResponse
-import com.paranid5.innobookingfakeapi.data.Room
+import com.paranid5.innobookingfakeapi.data.RoomData
 import io.ktor.http.*
 import io.ktor.server.routing.*
 import io.ktor.server.response.*
@@ -16,13 +16,13 @@ fun Application.configureRouting() {
             get {
                 call.respond(
                     listOf(
-                        Room(
+                        RoomData(
                             name = "Meeting Room #3.1",
                             id = "3.1",
                             type = "MEETING_ROOM",
                             capacity = 6
                         ),
-                        Room(
+                        RoomData(
                             name = "Meeting Room #3.2",
                             id = "3.2",
                             type = "MEETING_ROOM",
@@ -35,7 +35,7 @@ fun Application.configureRouting() {
             post("/free") {
                 call.respond(
                     listOf(
-                        Room(
+                        RoomData(
                             name = "Meeting Room #3.2",
                             id = "3.2",
                             type = "MEETING_ROOM",
@@ -55,7 +55,7 @@ fun Application.configureRouting() {
                         title = request.title,
                         start = request.start,
                         end = request.end,
-                        room = Room(
+                        room = RoomData(
                             name = "Meeting Room #${params["room_id"]}",
                             id = params["room_id"]!!,
                             type = "MEETING_ROOM",
@@ -76,7 +76,7 @@ fun Application.configureRouting() {
                             title = "Gay party",
                             start = Instant.parse("2023-06-20T21:31:22.898Z"),
                             end = Instant.parse("2023-06-20T21:31:22.898Z"),
-                            room = Room(
+                            room = RoomData(
                                 name = "Meeting Room #32",
                                 id = "228",
                                 type = "MEETING_ROOM",
@@ -89,7 +89,7 @@ fun Application.configureRouting() {
                             title = "Kudaskell",
                             start = Instant.parse("2023-06-20T21:31:22.898Z"),
                             end = Instant.parse("2023-06-20T21:31:22.898Z"),
-                            room = Room(
+                            room = RoomData(
                                 name = "Room 303",
                                 id = "135",
                                 type = "ROOM",
