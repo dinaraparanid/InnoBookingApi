@@ -2,14 +2,18 @@ package com.paranid5.innobookingfakeapi.data.exposed.books
 
 import com.paranid5.innobookingfakeapi.data.exposed.AsyncRepository
 import com.paranid5.innobookingfakeapi.data.exposed.rooms.RoomDao
+import com.paranid5.innobookingfakeapi.data.exposed.rooms.Rooms
 import com.paranid5.innobookingfakeapi.data.exposed.users.UserDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 object BookRepository : AsyncRepository<Int, BookDao> {
     override val table by lazy { Books }
@@ -53,7 +57,7 @@ object BookRepository : AsyncRepository<Int, BookDao> {
         async(Dispatchers.IO) {
             newSuspendedTransaction {
                 BookDao
-                    .find { (Books.start lessEq start) and (Books.end lessEq end) }
+                    .find { (Books.start greaterEq start) and (Books.end lessEq end) }
                     .toList()
             }
         }
@@ -72,7 +76,7 @@ object BookRepository : AsyncRepository<Int, BookDao> {
             newSuspendedTransaction {
                 BookDao.find {
                     (Books.room eq roomId) and
-                            (Books.start lessEq start) and
+                            (Books.start greaterEq start) and
                             (Books.end lessEq end)
                 }.toList()
             }
@@ -92,7 +96,7 @@ object BookRepository : AsyncRepository<Int, BookDao> {
             newSuspendedTransaction {
                 BookDao.find {
                     (Books.owner eq ownerId) and
-                            (Books.start lessEq start) and
+                            (Books.start greaterEq start) and
                             (Books.end lessEq end)
                 }.toList()
             }
@@ -109,7 +113,7 @@ object BookRepository : AsyncRepository<Int, BookDao> {
         }
     }
 
-    suspend inline fun getByOwnerInDurationAsync(
+    suspend inline fun getByRoomAndOwnerInDurationAsync(
         roomId: String,
         ownerId: Int,
         start: LocalDateTime,
@@ -120,7 +124,61 @@ object BookRepository : AsyncRepository<Int, BookDao> {
                 BookDao.find {
                     (Books.room eq roomId) and
                             (Books.owner eq ownerId) and
-                            (Books.start lessEq start) and
+                            (Books.start greaterEq start) and
+                            (Books.end lessEq end)
+                }.toList()
+            }
+        }
+    }
+
+    suspend inline fun getTotalDayBookTimeForOwner(ownerId: Int, date: LocalDate) = coroutineScope {
+        async(Dispatchers.IO) {
+            newSuspendedTransaction {
+                getByOwnerInDurationAsync(
+                    ownerId = ownerId,
+                    start = LocalDateTime.of(
+                        date.year,
+                        date.month,
+                        date.dayOfMonth,
+                        0,
+                        0
+                    ),
+                    end = LocalDateTime.of(
+                        date.year,
+                        date.month,
+                        date.dayOfMonth,
+                        23,
+                        59
+                    )
+                ).await().sumOf { ChronoUnit.MINUTES.between(it.start, it.end) }
+            }
+        }
+    }
+
+    suspend inline fun getFreeRoomsAsync(
+        start: LocalDateTime,
+        end: LocalDateTime
+    ) = coroutineScope {
+        async(Dispatchers.IO) {
+            newSuspendedTransaction {
+                val bookedRooms = getInDurationAsync(start, end).await().map { it.room.id }
+                RoomDao.find { Rooms.id notInList bookedRooms }.toList()
+            }
+        }
+    }
+
+    suspend inline fun getByRoomsOrOwnersOrInDurationAsync(
+        roomsId: List<String>,
+        ownersId: List<Int>,
+        start: LocalDateTime,
+        end: LocalDateTime
+    ) = coroutineScope {
+        async(Dispatchers.IO) {
+            newSuspendedTransaction {
+                BookDao.find {
+                    (Books.room inList roomsId) or
+                            (Books.owner inList ownersId) or
+                            (Books.start greaterEq start) or
                             (Books.end lessEq end)
                 }.toList()
             }
@@ -134,13 +192,15 @@ object BookRepository : AsyncRepository<Int, BookDao> {
         room: RoomDao,
         owner: UserDao
     ) = coroutineScope {
-        launch(Dispatchers.IO) {
-            BookDao.new {
-                this.title = title
-                this.start = start
-                this.end = end
-                this.room = room
-                this.owner = owner
+        async(Dispatchers.IO) {
+            newSuspendedTransaction {
+                BookDao.new {
+                    this.title = title
+                    this.start = start
+                    this.end = end
+                    this.room = room
+                    this.owner = owner
+                }
             }
         }
     }
@@ -148,6 +208,12 @@ object BookRepository : AsyncRepository<Int, BookDao> {
     suspend inline fun updateAsync(book: BookDao, crossinline action: BookDao.() -> Unit) = coroutineScope {
         launch(Dispatchers.IO) {
             newSuspendedTransaction { action(book) }
+        }
+    }
+
+    suspend inline fun deleteAsync(book: BookDao) = coroutineScope {
+        launch(Dispatchers.IO) {
+            newSuspendedTransaction { book.delete() }
         }
     }
 }

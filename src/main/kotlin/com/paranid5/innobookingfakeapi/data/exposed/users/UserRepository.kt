@@ -19,8 +19,24 @@ object UserRepository : AsyncRepository<Int, UserDao> {
         }
     }
 
+    suspend inline fun getByEmailsAsync(emails: List<String>) = coroutineScope {
+        async(Dispatchers.IO) {
+            newSuspendedTransaction {
+                UserDao.find { Users.email inList emails }.toList()
+            }
+        }
+    }
+
+    suspend inline fun getIdByEmailsAsync(emails: List<String>) = coroutineScope {
+        async(Dispatchers.IO) {
+            newSuspendedTransaction {
+                UserDao.find { Users.email inList emails }.map { it.id.value }.toList()
+            }
+        }
+    }
+
     suspend inline fun addAsync(email: String) = coroutineScope {
-        launch(Dispatchers.IO) {
+        async(Dispatchers.IO) {
             newSuspendedTransaction {
                 UserDao.new { this.email = email }
             }

@@ -1,109 +1,149 @@
 package com.paranid5.innobookingfakeapi.plugins
 
-import com.paranid5.innobookingfakeapi.data.BookRequest
-import com.paranid5.innobookingfakeapi.data.BookResponse
-import com.paranid5.innobookingfakeapi.data.RoomData
+import com.paranid5.innobookingfakeapi.data.*
+import com.paranid5.innobookingfakeapi.data.exposed.books.BookDao
+import com.paranid5.innobookingfakeapi.data.exposed.books.BookRepository
+import com.paranid5.innobookingfakeapi.data.exposed.books.toBookResponse
+import com.paranid5.innobookingfakeapi.data.exposed.rooms.RoomDao
+import com.paranid5.innobookingfakeapi.data.exposed.rooms.RoomRepository
+import com.paranid5.innobookingfakeapi.data.exposed.rooms.toRoomData
+import com.paranid5.innobookingfakeapi.data.exposed.users.UserRepository
+import com.paranid5.innobookingfakeapi.data.extensions.toJavaLocalDateTime
 import io.ktor.http.*
 import io.ktor.server.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
-import kotlinx.datetime.Instant
+import io.ktor.util.pipeline.*
+import kotlinx.datetime.Clock
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
+
+private const val MAX_MINUTES_PER_BOOK = 60 * 3
+private const val MAX_MINUTES_PER_DAY = 60 * 5
 
 fun Application.configureRouting() {
     routing {
         route("/rooms") {
-            get {
-                call.respond(
-                    listOf(
-                        RoomData(
-                            name = "Meeting Room #3.1",
-                            id = "3.1",
-                            type = "MEETING_ROOM",
-                            capacity = 6
-                        ),
-                        RoomData(
-                            name = "Meeting Room #3.2",
-                            id = "3.2",
-                            type = "MEETING_ROOM",
-                            capacity = 6
-                        )
-                    )
-                )
-            }
-
-            post("/free") {
-                call.respond(
-                    listOf(
-                        RoomData(
-                            name = "Meeting Room #3.2",
-                            id = "3.2",
-                            type = "MEETING_ROOM",
-                            capacity = 6
-                        )
-                    )
-                )
-            }
-
-            post("/{room_id}/book") {
-                val request = call.receive<BookRequest>()
-                val params = call.parameters
-
-                call.respond(
-                    BookResponse(
-                        id = "123",
-                        title = request.title,
-                        start = request.start,
-                        end = request.end,
-                        room = RoomData(
-                            name = "Meeting Room #${params["room_id"]}",
-                            id = params["room_id"]!!,
-                            type = "MEETING_ROOM",
-                            capacity = 6
-                        ),
-                        ownerEmail = request.ownerEmail
-                    )
-                )
-            }
+            get { onRoomsReceived() }
+            post("/free") { onFreeReceived() }
+            post("/{room_id}/book") { onBookReceived() }
         }
 
         route("/bookings") {
-            post("/query") {
-                call.respond(
-                    listOf(
-                        BookResponse(
-                            id = "123",
-                            title = "Gay party",
-                            start = Instant.parse("2023-06-20T21:31:22.898Z"),
-                            end = Instant.parse("2023-06-20T21:31:22.898Z"),
-                            room = RoomData(
-                                name = "Meeting Room #32",
-                                id = "228",
-                                type = "MEETING_ROOM",
-                                capacity = 6
-                            ),
-                            ownerEmail = "g.bebra@innopolis.university"
-                        ),
-                        BookResponse(
-                            id = "453",
-                            title = "Kudaskell",
-                            start = Instant.parse("2023-06-20T21:31:22.898Z"),
-                            end = Instant.parse("2023-06-20T21:31:22.898Z"),
-                            room = RoomData(
-                                name = "Room 303",
-                                id = "135",
-                                type = "ROOM",
-                                capacity = 30
-                            ),
-                            ownerEmail = "s.bebra@innopolis.university"
-                        )
-                    )
-                )
-            }
+            post("/query") { onBookQueryReceived() }
+            delete("/{booking_id}") { onBookCancelReceived() }
+        }
+    }
+}
 
-            delete("/{booking_id}") {
-                call.response.status(HttpStatusCode.OK)
-            }
+private suspend inline fun PipelineContext<Unit, ApplicationCall>.onRoomsReceived() =
+    call.respond(RoomRepository.getAllAsync().await().map(RoomDao::toRoomData))
+
+private suspend inline fun PipelineContext<Unit, ApplicationCall>.onFreeReceived() {
+    val (start, end) = call.receive<BookTimePeriod>()
+
+    call.respond(
+        BookRepository.getFreeRoomsAsync(
+            start.toJavaLocalDateTime(),
+            end.toJavaLocalDateTime()
+        ).await().map(RoomDao::toRoomData)
+    )
+}
+
+private inline val LocalDateTime.inAvailableForBookingHourRange
+    get() = (hour >= 19 || hour < 8)
+
+private suspend inline fun PipelineContext<Unit, ApplicationCall>.onBookReceived() {
+    val (title, startKt, endKt, ownerEmail) = call.receive<BookRequest>()
+
+    val start = startKt.toJavaLocalDateTime()
+    val end = endKt.toJavaLocalDateTime()
+    val currentTime = Clock.System.now().toJavaLocalDateTime()
+
+    if (start <= currentTime || end <= start) {
+        println("Illegal time 1")
+        call.response.status(HttpStatusCode.BadRequest)
+        return
+    }
+
+    if (!start.inAvailableForBookingHourRange || !end.inAvailableForBookingHourRange) {
+        println("Illegal time 2")
+        call.response.status(HttpStatusCode.BadRequest)
+        return
+    }
+
+    val roomId = call.parameters["room_id"] ?: run {
+        println("Room id not found")
+        call.response.status(HttpStatusCode.BadRequest)
+        return
+    }
+
+    val room = RoomRepository.getByIdAsync(roomId).await()
+
+    if (room == null) {
+        println("Room not found")
+        call.response.status(HttpStatusCode.BadRequest)
+        return
+    }
+
+    if (BookRepository.getByRoomInDurationAsync(roomId, start, end).await().isNotEmpty()) {
+        println("Room is booked")
+        call.response.status(HttpStatusCode.BadRequest)
+        return
+    }
+
+    val owner = UserRepository.getByEmailAsync(ownerEmail).await()
+        ?: UserRepository.addAsync(ownerEmail).await()
+
+    val totalTodayMinutes = BookRepository.getTotalDayBookTimeForOwner(
+        ownerId = owner.id.value,
+        date = start.toLocalDate()
+    ).await()
+
+    val bookMinutes = ChronoUnit.MINUTES.between(start, end)
+
+    if (bookMinutes > MAX_MINUTES_PER_BOOK || totalTodayMinutes + bookMinutes > MAX_MINUTES_PER_DAY) {
+        println("Time limit exceeded")
+        call.response.status(HttpStatusCode.BadRequest)
+        return
+    }
+
+    call.respond(
+        BookRepository
+            .addAsync(title, start, end, room, owner)
+            .await()
+            .toBookResponse()
+    )
+}
+
+private suspend inline fun PipelineContext<Unit, ApplicationCall>.onBookQueryReceived() {
+    val (start, end, roomsId, ownerEmails) = call.receive<BookQueryRequest>().filter
+    val ownersId = UserRepository.getIdByEmailsAsync(ownerEmails).await()
+
+    call.respond(
+        BookRepository.getByRoomsOrOwnersOrInDurationAsync(
+            roomsId = roomsId,
+            ownersId = ownersId,
+            start = start.toJavaLocalDateTime(),
+            end = end.toJavaLocalDateTime()
+        ).await().map { it.toBookResponse() }
+    )
+}
+
+private suspend inline fun PipelineContext<Unit, ApplicationCall>.onBookCancelReceived() {
+    val bookId = call.parameters["booking_id"]?.toIntOrNull() ?: run {
+        call.response.status(HttpStatusCode.NotFound)
+        return
+    }
+
+    when (val book = BookRepository.getByIdAsync(bookId).await()) {
+        null -> call.response.status(HttpStatusCode.NotFound)
+
+        else -> {
+            BookRepository.deleteAsync(book).join()
+            call.response.status(HttpStatusCode.OK)
         }
     }
 }

@@ -22,7 +22,7 @@ interface AsyncRepository<Id : Comparable<Id>, E : Entity<Id>> {
     }
 
     suspend fun getAllAsync() = coroutineScope {
-        launch(Dispatchers.IO) {
+        async(Dispatchers.IO) {
             newSuspendedTransaction { dao.all().toList() }
         }
     }
