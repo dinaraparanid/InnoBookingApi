@@ -1,7 +1,8 @@
 package com.paranid5.innobookingfakeapi.plugins
 
-import com.paranid5.innobookingfakeapi.data.*
-import com.paranid5.innobookingfakeapi.data.exposed.books.BookDao
+import com.paranid5.innobookingfakeapi.data.BookQueryRequest
+import com.paranid5.innobookingfakeapi.data.BookRequest
+import com.paranid5.innobookingfakeapi.data.BookTimePeriod
 import com.paranid5.innobookingfakeapi.data.exposed.books.BookRepository
 import com.paranid5.innobookingfakeapi.data.exposed.books.toBookResponse
 import com.paranid5.innobookingfakeapi.data.exposed.rooms.RoomDao
@@ -10,13 +11,14 @@ import com.paranid5.innobookingfakeapi.data.exposed.rooms.toRoomData
 import com.paranid5.innobookingfakeapi.data.exposed.users.UserRepository
 import com.paranid5.innobookingfakeapi.data.extensions.toJavaLocalDateTime
 import io.ktor.http.*
-import io.ktor.server.routing.*
-import io.ktor.server.response.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
 import kotlinx.datetime.Clock
-import java.time.LocalDate
+import kotlinx.serialization.json.Json
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -119,7 +121,7 @@ private suspend inline fun PipelineContext<Unit, ApplicationCall>.onBookReceived
 }
 
 private suspend inline fun PipelineContext<Unit, ApplicationCall>.onBookQueryReceived() {
-    val (start, end, roomsId, ownerEmails) = call.receive<BookQueryRequest>().filter
+    val (start, end, roomsId, ownerEmails) = Json.decodeFromString<BookQueryRequest>(call.receiveText()).filter
     val ownersId = UserRepository.getIdByEmailsAsync(ownerEmails).await()
 
     call.respond(

@@ -22,7 +22,7 @@ fun Application.configureHTTP() {
 
         deflate {
             priority = 10.0
-            minimumSize(1024) // condition
+            minimumSize(1024)
         }
     }
 }
