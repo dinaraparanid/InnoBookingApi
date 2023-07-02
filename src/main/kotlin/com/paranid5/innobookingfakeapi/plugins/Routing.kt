@@ -44,7 +44,7 @@ private suspend inline fun PipelineContext<Unit, ApplicationCall>.onRoomsReceive
     call.respond(RoomRepository.getAllAsync().await().map(RoomDao::toRoomData))
 
 private suspend inline fun PipelineContext<Unit, ApplicationCall>.onFreeReceived() {
-    val (start, end) = call.receive<BookTimePeriod>()
+    val (start, end) = Json.decodeFromString<BookTimePeriod>(call.receiveText())
 
     call.respond(
         BookRepository.getFreeRoomsAsync(
@@ -58,7 +58,7 @@ private inline val LocalDateTime.inAvailableForBookingHourRange
     get() = (hour >= 19 || hour < 8)
 
 private suspend inline fun PipelineContext<Unit, ApplicationCall>.onBookReceived() {
-    val (title, startKt, endKt, ownerEmail) = call.receive<BookRequest>()
+    val (title, startKt, endKt, ownerEmail) = Json.decodeFromString<BookRequest>(call.receiveText())
 
     val start = startKt.toJavaLocalDateTime()
     val end = endKt.toJavaLocalDateTime()
