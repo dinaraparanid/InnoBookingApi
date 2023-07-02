@@ -7,11 +7,12 @@ import io.ktor.server.application.*
 
 fun Application.configureHTTP() {
     install(CORS) {
-        allowMethod(HttpMethod.Options)
-        allowMethod(HttpMethod.Put)
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Post)
         allowMethod(HttpMethod.Delete)
-        allowMethod(HttpMethod.Patch)
+        allowMethod(HttpMethod.Options)
         allowHeader(HttpHeaders.Authorization)
+        anyHost()
     }
 
     install(Compression) {
