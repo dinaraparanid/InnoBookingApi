@@ -13,7 +13,8 @@ RUN apk add --no-cache bash
 RUN mkdir /app
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/InnoBookingFakeApi.jar
 
+EXPOSE 8080
+
 # Start point in your app
 # In my case it was not required
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/InnoBookingFakeApi.jar"]
+# ENTRYPOINT ["java", "-jar", "/app/InnoBookingFakeApi.jar"]

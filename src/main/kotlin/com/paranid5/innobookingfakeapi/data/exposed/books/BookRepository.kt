@@ -176,9 +176,9 @@ object BookRepository : AsyncRepository<Int, BookDao> {
         async(Dispatchers.IO) {
             newSuspendedTransaction {
                 BookDao.find {
-                    (Books.room inList roomsId) or
-                            (Books.owner inList ownersId) or
-                            (Books.start greaterEq start) or
+                    (Books.room inList roomsId) and
+                            (Books.owner inList ownersId) and
+                            (Books.start greaterEq start) and
                             (Books.end lessEq end)
                 }.toList()
             }
