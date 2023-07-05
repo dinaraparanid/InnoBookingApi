@@ -69,5 +69,9 @@ val fatJar = task("fatJar", type = Jar::class) {
 }
 
 tasks {
+    compileKotlin {
+        kotlinOptions.jvmTarget = "17"
+    }
+
     "build" { dependsOn(fatJar) }
 }
