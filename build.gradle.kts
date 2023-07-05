@@ -55,6 +55,7 @@ tasks.jar {
 }
 
 val fatJar = task("fatJar", type = Jar::class) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     archiveBaseName.set("${project.name}-fat")
 
     manifest {

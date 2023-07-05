@@ -1,5 +1,5 @@
 # Replace `17` with your project's java version
-FROM gradle:7-jdk17 AS build
+FROM gradle:8-jdk17 AS build
 COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN gradle buildFatJar --no-daemon
