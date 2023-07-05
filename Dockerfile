@@ -12,7 +12,6 @@ EXPOSE 8080:8080
 
 RUN apk add --no-cache bash
 
-# Replace with prefered jar's name
 RUN mkdir /app
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/
 
