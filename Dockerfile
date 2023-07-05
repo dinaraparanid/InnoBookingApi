@@ -16,4 +16,4 @@ COPY --from=build /home/gradle/src/build/libs/*.jar /app/InnoBookingFakeApi.jar
 # Start point in your app
 # In my case it was not required
 EXPOSE 8080
-CMD ["java", "-jar", "/app/InnoBookingFakeApi.jar"]
+ENTRYPOINT ["java", "-jar", "/app/InnoBookingFakeApi.jar"]
