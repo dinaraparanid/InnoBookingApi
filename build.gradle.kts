@@ -10,8 +10,11 @@ plugins {
 
 group = "com.paranid5.innobookingfakeapi"
 version = "0.0.1"
+
+val mainClassTitle = "com.paranid5.innobookingfakeapi.ApplicationKt"
+
 application {
-    mainClass.set("com.paranid5.innobookingfakeapi.ApplicationKt")
+    mainClass.set(mainClassTitle)
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
@@ -39,4 +42,31 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
     implementation("org.xerial:sqlite-jdbc:3.42.0.0")
+}
+
+tasks.jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    manifest {
+        attributes["Main-Class"] = mainClassTitle
+    }
+
+    configurations["compileClasspath"].forEach { from(zipTree(it.absoluteFile)) }
+}
+
+val fatJar = task("fatJar", type = Jar::class) {
+    archiveBaseName.set("${project.name}-fat")
+
+    manifest {
+        attributes["Implementation-Title"] = "Gradle Jar File Example"
+        attributes["Implementation-Version"] = archiveVersion
+        attributes["Main-Class"] = mainClassTitle
+    }
+
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    with(tasks.jar.get() as CopySpec)
+}
+
+tasks {
+    "build" { dependsOn(fatJar) }
 }
