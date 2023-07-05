@@ -44,6 +44,11 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:3.42.0.0")
 }
 
+tasks.wrapper {
+    gradleVersion = "8.2"
+    distributionType = Wrapper.DistributionType.ALL
+}
+
 tasks.jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
@@ -70,7 +75,7 @@ val fatJar = task("fatJar", type = Jar::class) {
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "17"
+        kotlinOptions.jvmTarget = "19"
     }
 
     "build" { dependsOn(fatJar) }
