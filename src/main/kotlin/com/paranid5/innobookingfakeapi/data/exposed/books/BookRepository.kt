@@ -173,6 +173,11 @@ object BookRepository : AsyncRepository<Int, BookDao> {
         end: LocalDateTime
     ) = coroutineScope {
         async(Dispatchers.IO) {
+            println("Rooms: $roomsId")
+            println("Owners: $ownersId")
+            println("Start: $start")
+            println("End: $end")
+
             newSuspendedTransaction {
                 BookDao.find {
                     when {
