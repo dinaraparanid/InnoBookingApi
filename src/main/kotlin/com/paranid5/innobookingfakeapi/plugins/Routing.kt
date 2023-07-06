@@ -120,7 +120,7 @@ private suspend inline fun PipelineContext<Unit, ApplicationCall>.onBookReceived
 }
 
 private suspend inline fun PipelineContext<Unit, ApplicationCall>.onBookQueryReceived() {
-    val (start, end, roomsId, ownerEmails) = Json.decodeFromString<BookQueryRequest>(call.receiveText()).filter
+    val (start, end, ownerEmails, roomsId) = Json.decodeFromString<BookQueryRequest>(call.receiveText()).filter
     val ownersId = UserRepository.getIdByEmailsAsync(ownerEmails).await()
 
     call.respond(
