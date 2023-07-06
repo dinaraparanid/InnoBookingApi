@@ -9,7 +9,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -167,7 +166,7 @@ object BookRepository : AsyncRepository<Int, BookDao> {
         }
     }
 
-    suspend inline fun getByRoomsOrOwnersOrInDurationAsync(
+    suspend inline fun getByRoomsOwnersInDurationAsync(
         roomsId: List<String>,
         ownersId: List<Int>,
         start: LocalDateTime,
@@ -176,10 +175,25 @@ object BookRepository : AsyncRepository<Int, BookDao> {
         async(Dispatchers.IO) {
             newSuspendedTransaction {
                 BookDao.find {
-                    (Books.room inList roomsId) and
+                    when {
+                        roomsId.isNotEmpty() && ownersId.isNotEmpty() ->
+                            (Books.room inList roomsId) and
+                                    (Books.owner inList ownersId) and
+                                    (Books.start greaterEq start) and
+                                    (Books.end lessEq end)
+
+                        roomsId.isNotEmpty() ->
+                            (Books.room inList roomsId) and
+                                    (Books.start greaterEq start) and
+                                    (Books.end lessEq end)
+
+                        ownersId.isNotEmpty() ->
                             (Books.owner inList ownersId) and
-                            (Books.start greaterEq start) and
-                            (Books.end lessEq end)
+                                    (Books.start greaterEq start) and
+                                    (Books.end lessEq end)
+
+                        else -> (Books.start greaterEq start) and (Books.end lessEq end)
+                    }
                 }.toList()
             }
         }

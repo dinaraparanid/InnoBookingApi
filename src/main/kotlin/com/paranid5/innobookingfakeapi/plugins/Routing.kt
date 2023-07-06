@@ -18,7 +18,6 @@ import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
-import java.time.Instant
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -125,7 +124,7 @@ private suspend inline fun PipelineContext<Unit, ApplicationCall>.onBookQueryRec
     val ownersId = UserRepository.getIdByEmailsAsync(ownerEmails).await()
 
     call.respond(
-        BookRepository.getByRoomsOrOwnersOrInDurationAsync(
+        BookRepository.getByRoomsOwnersInDurationAsync(
             roomsId = roomsId,
             ownersId = ownersId,
             start = start.toJavaLocalDateTime(),
