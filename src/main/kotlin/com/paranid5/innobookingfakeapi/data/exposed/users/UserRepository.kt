@@ -1,15 +1,30 @@
 package com.paranid5.innobookingfakeapi.data.exposed.users
 
 import com.paranid5.innobookingfakeapi.data.exposed.AsyncRepository
+import com.paranid5.innobookingfakeapi.data.exposed.rooms.Rooms
+import com.paranid5.innobookingfakeapi.data.firebase.fetchUsersFromFirestoreAsync
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 object UserRepository : AsyncRepository<Int, UserDao> {
     override val table by lazy { Users }
     override val dao by lazy { UserDao }
+
+    override suspend fun createTableAsync() = coroutineScope {
+        launch(Dispatchers.IO) {
+            newSuspendedTransaction {
+                if (!Rooms.exists()) {
+                    SchemaUtils.create(Rooms)
+                    fetchUsersAsync()
+                }
+            }
+        }
+    }
 
     suspend inline fun getByEmailAsync(email: String) = coroutineScope {
         async(Dispatchers.IO) {
@@ -46,6 +61,16 @@ object UserRepository : AsyncRepository<Int, UserDao> {
     suspend inline fun updateAsync(user: UserDao, crossinline action: UserDao.() -> Unit) = coroutineScope {
         launch(Dispatchers.IO) {
             newSuspendedTransaction { action(user) }
+        }
+    }
+
+    private suspend inline fun fetchUsersAsync() = coroutineScope {
+        launch(Dispatchers.IO) {
+            newSuspendedTransaction {
+                fetchUsersFromFirestoreAsync()
+                    .await()
+                    .forEach { UserDao.new { this.email = it } }
+            }
         }
     }
 }

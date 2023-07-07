@@ -41,6 +41,8 @@ dependencies {
 
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
+    implementation("com.google.firebase:firebase-admin:9.2.0")
+
     implementation("org.xerial:sqlite-jdbc:3.42.0.0")
 }
 

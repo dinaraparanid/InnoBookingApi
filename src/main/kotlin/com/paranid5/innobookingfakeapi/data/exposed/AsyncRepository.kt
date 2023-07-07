@@ -1,6 +1,5 @@
 package com.paranid5.innobookingfakeapi.data.exposed
 
-import com.paranid5.innobookingfakeapi.data.exposed.rooms.Rooms
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
