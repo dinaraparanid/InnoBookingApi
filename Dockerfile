@@ -6,9 +6,7 @@ RUN export GRADLE_OPTS="-Djdk.lang.Process.launchMechanism=vfork"
 RUN gradle buildFatJar --no-daemon
 
 # Replace `19` with your project's java version
-FROM openjdk:19-alpine
-
-RUN apk add --no-cache bash
+FROM openjdk:19
 
 RUN mkdir /app
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/InnoBookingFakeApi.jar
