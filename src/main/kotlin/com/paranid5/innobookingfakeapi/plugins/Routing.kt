@@ -121,7 +121,17 @@ private suspend inline fun PipelineContext<Unit, ApplicationCall>.onBookReceived
 
 private suspend inline fun PipelineContext<Unit, ApplicationCall>.onBookQueryReceived() {
     val (start, end, ownerEmails, roomsId) = Json.decodeFromString<BookQueryRequest>(call.receiveText()).filter
+
+    println("-------- BOOK REQUEST --------")
+    println("Start: $start")
+    println("End: $end")
+    println("Owner Emails: $ownerEmails")
+    println("Room ID: $roomsId")
+
     val ownersId = UserRepository.getIdByEmailsAsync(ownerEmails).await()
+
+    if (ownersId.size != ownerEmails.size)
+        throw RuntimeException("OwnersID != OwnersEmails")
 
     call.respond(
         BookRepository.getByRoomsOwnersInDurationAsync(
