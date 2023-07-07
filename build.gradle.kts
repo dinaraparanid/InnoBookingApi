@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
@@ -6,12 +8,13 @@ plugins {
     kotlin("jvm") version "1.8.22"
     id("io.ktor.plugin") version "2.3.1"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.8.22"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "com.paranid5.innobookingfakeapi"
 version = "0.0.1"
 
-val mainClassTitle = "com.paranid5.innobookingfakeapi.ApplicationKt"
+val mainClassTitle = "$group.ApplicationKt"
 
 application {
     mainClass.set(mainClassTitle)
@@ -46,6 +49,10 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:3.42.0.0")
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 tasks.wrapper {
     gradleVersion = "8.2"
     distributionType = Wrapper.DistributionType.ALL
@@ -59,6 +66,7 @@ tasks.jar {
     }
 
     configurations["compileClasspath"].forEach { from(zipTree(it.absoluteFile)) }
+    exclude(listOf("META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA"))
 }
 
 val fatJar = task("fatJar", type = Jar::class) {
@@ -73,6 +81,11 @@ val fatJar = task("fatJar", type = Jar::class) {
 
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     with(tasks.jar.get() as CopySpec)
+}
+
+tasks.withType<ShadowJar> {
+    mergeServiceFiles()
+    archiveFileName.set("InnoBookingFakeApi.jar")
 }
 
 tasks {
