@@ -1,7 +1,6 @@
 package com.paranid5.innobookingfakeapi.data.exposed.users
 
 import com.paranid5.innobookingfakeapi.data.exposed.AsyncRepository
-import com.paranid5.innobookingfakeapi.data.exposed.rooms.Rooms
 import com.paranid5.innobookingfakeapi.data.firebase.fetchUsersFromFirestoreAsync
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -18,9 +17,9 @@ object UserRepository : AsyncRepository<Int, UserDao> {
     override suspend fun createTableAsync() = coroutineScope {
         launch(Dispatchers.IO) {
             newSuspendedTransaction {
-                if (!Rooms.exists()) {
-                    SchemaUtils.create(Rooms)
-                    fetchUsersAsync()
+                if (!Users.exists()) {
+                    SchemaUtils.create(Users)
+                    fetchUsersAsync().join()
                 }
             }
         }
