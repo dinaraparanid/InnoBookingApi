@@ -16,8 +16,14 @@ data class BookQueryRequest(val filter: Filter) {
 
     constructor(
         startedAtOrAfter: Instant,
-        endedAtOrAfter: Instant,
+        endedAtOrBefore: Instant,
         roomIdIn: List<String> = listOf(),
         ownerEmailIn: List<String> = listOf()
-    ) : this(Filter(startedAtOrAfter, endedAtOrAfter, roomIdIn, ownerEmailIn))
+    ) : this(
+        Filter(
+            startedAtOrAfter = startedAtOrAfter,
+            endedAtOrBefore = endedAtOrBefore,
+            roomIdIn = roomIdIn,
+            ownerEmailIn = ownerEmailIn)
+    )
 }
