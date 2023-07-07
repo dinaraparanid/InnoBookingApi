@@ -12,6 +12,7 @@ RUN apk add --no-cache bash
 
 RUN mkdir /app
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/InnoBookingFakeApi.jar
+COPY gaydb-309f8-firebase-adminsdk-va4vn-aef993aeb9.json gaydb-309f8-firebase-adminsdk-va4vn-aef993aeb9.json
 
 EXPOSE 8080
 
