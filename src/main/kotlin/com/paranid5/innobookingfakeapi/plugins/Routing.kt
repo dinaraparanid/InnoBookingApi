@@ -128,6 +128,8 @@ private suspend inline fun PipelineContext<Unit, ApplicationCall>.onBookQueryRec
     println("Owner Emails: $ownerEmails")
     println("Room ID: $roomsId")
 
+    println("All users: ${UserRepository.getAllAsync().await()}")
+
     val ownersId = UserRepository.getIdByEmailsAsync(ownerEmails).await()
 
     if (ownersId.size != ownerEmails.size)
