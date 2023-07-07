@@ -90,7 +90,7 @@ tasks.withType<ShadowJar> {
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "19"
+        kotlinOptions.jvmTarget = "17"
     }
 
     "build" { dependsOn(fatJar) }
