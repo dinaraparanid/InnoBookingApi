@@ -1,0 +1,14 @@
+stages:
+  - build
+  - deploy
+
+build-job:
+  stage: build
+  script:
+    - ./gradlew build
+
+deploy-job:
+  stage: deploy
+  script:
+    - docker build -t innobookingfakeapi .
+    - docker run -p 8080:8080 innobookingfakeapi
