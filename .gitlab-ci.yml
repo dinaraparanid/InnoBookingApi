@@ -2,16 +2,12 @@ stages:
   - build
   - deploy
 
-default:
-  before_script:
-    - docker info
-
 build-job:
   stage: build
   script:
-    - docker build -t innobookingfakeapi .
+    - echo "docker build -t innobookingfakeapi ."
 
 deploy-job:
   stage: deploy
   script:
-    - docker run -p 8080:8080 innobookingfakeapi
+    - echo " docker run -p 8080:8080 innobookingfakeapi"
