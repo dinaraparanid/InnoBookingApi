@@ -2,12 +2,17 @@ stages:
   - build
   - deploy
 
+image: gitlab/dind
+
+services:
+  - docker:dind
+
 build-job:
   stage: build
   script:
-    - echo "docker build -t innobookingfakeapi ."
+    - docker build -t innobookingfakeapi .
 
 deploy-job:
   stage: deploy
   script:
-    - echo " docker run -p 8080:8080 innobookingfakeapi"
+    - docker run -p 8080:8080 innobookingfakeapi
