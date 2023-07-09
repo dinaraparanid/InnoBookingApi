@@ -2,17 +2,20 @@ stages:
   - build
   - deploy
 
-image: gitlab/dind
-
 services:
   - docker:dind
 
 build-job:
   stage: build
+  image: gradle:8.2-jdk17
+  before_script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle_home
   script:
-    - docker build -t innobookingfakeapi .
+    - gradle clean build
 
 deploy-job:
   stage: deploy
+  image: gitlab/dind
   script:
-    - docker run -p 8080:8080 innobookingfakeapi
+    - echo "docker build -t innobookingfakeapi ."
+    - echo "docker run -p 8080:8080 innobookingfakeapi"
