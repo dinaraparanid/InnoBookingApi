@@ -1,0 +1,405 @@
+openapi: 3.0.2
+info:
+  title: Room Booking Service
+  description: Innopolis University room booking service API.
+  version: 0.1.0
+paths:
+  /rooms:
+    get:
+      tags:
+        - Booking
+      summary: Get All Bookable Rooms
+      operationId: Get_all_bookable_rooms_rooms_get
+      parameters:
+        - required: false
+          schema:
+            title: Accept-Language
+            type: string
+            default: en-US
+          example: ru-RU
+          name: Accept-Language
+          in: header
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                title: Response Get All Bookable Rooms Rooms Get
+                type: array
+                items:
+                  $ref: '#/components/schemas/Room'
+        '401':
+          description: API token was not provided, is invalid or has been expired
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - Bearer: []
+  /rooms/free:
+    post:
+      tags:
+        - Booking
+      summary: Get Free Rooms
+      description: >-
+        Returns a list of rooms that are available for booking at the specified
+        time period.
+      operationId: Get_free_rooms_rooms_free_post
+      parameters:
+        - required: false
+          schema:
+            title: Accept-Language
+            type: string
+            default: en-US
+          example: ru-RU
+          name: Accept-Language
+          in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetFreeRoomsRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                title: Response Get Free Rooms Rooms Free Post
+                type: array
+                items:
+                  $ref: '#/components/schemas/Room'
+        '401':
+          description: API token was not provided, is invalid or has been expired
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - Bearer: []
+  /rooms/{room_id}/book:
+    post:
+      tags:
+        - Booking
+      summary: Book A Room
+      operationId: Book_a_room_rooms__room_id__book_post
+      parameters:
+        - required: true
+          schema:
+            title: Room Id
+            type: string
+          name: room_id
+          in: path
+        - required: false
+          schema:
+            title: Accept-Language
+            type: string
+            default: en-US
+          example: ru-RU
+          name: Accept-Language
+          in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookRoomRequest'
+        required: true
+      responses:
+        '200':
+          description: Room has been booked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '400':
+          description: This room cannot be booked for this user during this time period
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookRoomError'
+        '401':
+          description: API token was not provided, is invalid or has been expired
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - Bearer: []
+  /bookings/query:
+    post:
+      tags:
+        - Booking
+      summary: Query Bookings
+      operationId: Query_bookings_bookings_query_post
+      parameters:
+        - required: false
+          schema:
+            title: Accept-Language
+            type: string
+            default: en-US
+          example: ru-RU
+          name: Accept-Language
+          in: header
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryBookingsRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                title: Response Query Bookings Bookings Query Post
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        '401':
+          description: API token was not provided, is invalid or has been expired
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - Bearer: []
+  /bookings/{booking_id}:
+    delete:
+      tags:
+        - Booking
+      summary: Delete A Booking
+      operationId: Delete_a_booking_bookings__booking_id__delete
+      parameters:
+        - required: true
+          schema:
+            title: Booking Id
+            type: string
+          name: booking_id
+          in: path
+        - required: false
+          schema:
+            title: Accept-Language
+            type: string
+            default: en-US
+          example: ru-RU
+          name: Accept-Language
+          in: header
+      responses:
+        '200':
+          description: Booking was deleted successfully
+          content:
+            application/json:
+              schema: {}
+        '401':
+          description: API token was not provided, is invalid or has been expired
+        '404':
+          description: Booking with such ID is not found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - Bearer: []
+components:
+  schemas:
+    BookRoomError:
+      title: BookRoomError
+      required:
+        - message
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+    BookRoomRequest:
+      title: BookRoomRequest
+      required:
+        - title
+        - start
+        - end
+      type: object
+      properties:
+        title:
+          title: Title
+          type: string
+        start:
+          title: Start
+          type: string
+          format: date-time
+        end:
+          title: End
+          type: string
+          format: date-time
+        owner_email:
+          title: Owner Email
+          type: string
+          description: >-
+            Owner email address of the booking. Can be omitted, if the request
+            is made by the user who books a room.
+    Booking:
+      title: Booking
+      required:
+        - id
+        - title
+        - start
+        - end
+        - room
+        - owner_email
+      type: object
+      properties:
+        id:
+          title: Id
+          type: string
+        title:
+          title: Title
+          type: string
+        start:
+          title: Start
+          type: string
+          format: date-time
+        end:
+          title: End
+          type: string
+          format: date-time
+        room:
+          $ref: '#/components/schemas/Room'
+        owner_email:
+          title: Owner Email
+          type: string
+    BookingsFilter:
+      title: BookingsFilter
+      type: object
+      properties:
+        started_at_or_after:
+          title: Started At Or After
+          type: string
+          description: >-
+            When specified, only bookings that started at this time or later
+            will be returned.
+          format: date-time
+        ended_at_or_before:
+          title: Ended At Or Before
+          type: string
+          description: >-
+            When specified, only bookings that ended at this time or sooner will
+            be returned.
+          format: date-time
+        room_id_in:
+          title: Room Id In
+          type: array
+          items:
+            type: string
+          description: >-
+            When specified, only bookings of the rooms from the list will be
+            returned.
+        owner_email_in:
+          title: Owner Email In
+          type: array
+          items:
+            type: string
+          description: >-
+            When specified, only bookings with the owner with email address from
+            the list will be returned.
+    GetFreeRoomsRequest:
+      title: GetFreeRoomsRequest
+      required:
+        - start
+        - end
+      type: object
+      properties:
+        start:
+          title: Start
+          type: string
+          format: date-time
+        end:
+          title: End
+          type: string
+          format: date-time
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    QueryBookingsRequest:
+      title: QueryBookingsRequest
+      required:
+        - filter
+      type: object
+      properties:
+        filter:
+          $ref: '#/components/schemas/BookingsFilter'
+    Room:
+      title: Room
+      required:
+        - name
+        - id
+        - type
+        - capacity
+      type: object
+      properties:
+        name:
+          title: Name
+          type: string
+        id:
+          title: Id
+          type: string
+        type:
+          $ref: '#/components/schemas/RoomType'
+        capacity:
+          title: Capacity
+          type: integer
+      example:
+        name: 'Meeting Room #3.2'
+        id: '3.2'
+        type: MEETING_ROOM
+        capacity: 6
+    RoomType:
+      title: RoomType
+      enum:
+        - MEETING_ROOM
+        - AUDITORIUM
+      type: string
+      description: An enumeration.
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      in: header
+      name: Authorization

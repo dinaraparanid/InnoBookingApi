@@ -6,7 +6,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.javatime.datetime
 
-object Books : IntIdTable() {
+data object Books : IntIdTable() {
     val title = varchar("title", 100)
     val start = datetime("start")
     val end = datetime("end")

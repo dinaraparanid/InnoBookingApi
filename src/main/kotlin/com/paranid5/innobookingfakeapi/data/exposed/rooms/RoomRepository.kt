@@ -6,7 +6,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
-object RoomRepository : AsyncRepository<String, RoomDao> {
+data object RoomRepository : AsyncRepository<String, RoomDao> {
     override val table by lazy { Rooms }
     override val dao by lazy { RoomDao }
 

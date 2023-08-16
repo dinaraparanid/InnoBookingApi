@@ -14,7 +14,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
-object BookRepository : AsyncRepository<Int, BookDao> {
+data object BookRepository : AsyncRepository<Int, BookDao> {
     override val table by lazy { Books }
     override val dao by lazy { BookDao }
 

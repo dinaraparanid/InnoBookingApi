@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
-object UserRepository : AsyncRepository<Int, UserDao> {
+data object UserRepository : AsyncRepository<Int, UserDao> {
     override val table by lazy { Users }
     override val dao by lazy { UserDao }
 

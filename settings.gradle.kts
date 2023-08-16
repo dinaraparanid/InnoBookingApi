@@ -1,1 +1,1 @@
-rootProject.name = "InnoBookingFakeApi"
+rootProject.name = "InnoBookingApi"
